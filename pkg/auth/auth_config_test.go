@@ -170,3 +170,31 @@ func TestDeleteServer2(t *testing.T) {
 	assert.Equal(t, url1, c.Servers[0].URL, "Failed to remove the right server from the configuration")
 	assert.Equal(t, url1, c.CurrentServer, "Server 1 should be current server")
 }
+
+func TestEditUserAuth(t *testing.T) {
+	t.Parallel()
+	c := &auth.AuthConfig{}
+
+	auth1 := &auth.UserAuth{
+		ApiToken: "my-token",
+		Username: "my-user",
+	}
+	err := c.EditUserAuth("", auth1, "", true, true, nil, nil, nil, nil)
+	assert.NoError(t, err)
+
+	auth2 := &auth.UserAuth{
+		ApiToken: "my-token",
+		Username: "",
+	}
+	err = c.EditUserAuth("", auth2, "", true, true, nil, nil, nil, nil)
+	assert.Error(t, err)
+	assert.Equal(t, "Running in batch mode and no default Git username found", err.Error())
+
+	auth3 := &auth.UserAuth{
+		ApiToken: "",
+		Username: "my-user",
+	}
+	err = c.EditUserAuth("", auth3, "", true, true, nil, nil, nil, nil)
+	assert.Error(t, err)
+	assert.Equal(t, "Running in batch mode and no default API token found", err.Error())
+}
